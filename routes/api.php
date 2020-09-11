@@ -18,5 +18,10 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-
+Route::get('/talks', 'TalkController@index');
+Route::get('/talks/{id}', 'TalkController@getTalkByTag');
 Route::post('/talk', 'TalkController@store');
+Route::post('/add_play_count', 'TalkController@addPlayCount');
+
+Route::get('/tags', 'TagController@index');
+
