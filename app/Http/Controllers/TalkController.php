@@ -70,20 +70,22 @@ class TalkController extends Controller
                 'avatars' => implode(',', $avatars)
             ]);
 
-            foreach ($tags as $tag) {
+            if(!empty($tags)) {
+                foreach ($tags as $tag) {
 
-                $t = Tag::where('name', $tag)->first();
-                if (is_null($t)) {
-                    $t = Tag::create([
-                        'name' => $tag
+                    $t = Tag::where('name', $tag)->first();
+                    if (is_null($t)) {
+                        $t = Tag::create([
+                            'name' => $tag
+                        ]);
+                    }
+
+                    TagMap::create([
+                        'talk_id' => $talk->id,
+                        'tag_id' => $t->id
                     ]);
-                }
-
-                TagMap::create([
-                    'talk_id' => $talk->id,
-                    'tag_id' => $t->id
-                ]);
-            };
+                };
+            }
 
             return $talk;
 
