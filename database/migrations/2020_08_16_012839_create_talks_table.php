@@ -19,6 +19,7 @@ class CreateTalksTable extends Migration
             $table->text('contents');
             $table->string('rates');
             $table->string('avatars');
+            $table->string('ogp_img');
             $table->string('voice_types');
             $table->integer('play_count')->default(0);
             $table->integer('like_count')->default(0);

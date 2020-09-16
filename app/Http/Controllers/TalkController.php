@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Tag;
 use App\Models\TagMap;
 use App\models\Talk;
+use Exception;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class TalkController extends Controller
 {
@@ -33,6 +36,7 @@ class TalkController extends Controller
                 'play_count' => $item->play_count,
                 'like_count' => $item->like_count,
                 'comment_count' => $item->comment_count,
+                'ogp_img' => $item-> ogp_img
             ];
             foreach ($contents as $index => $value) {
                 $talk['comments'][$index] = [];
@@ -46,7 +50,7 @@ class TalkController extends Controller
         });
 
 
-        return ['talks' => $talks];
+        return ['data' => $talks];
     }
 
     public function store(Request $request, Response $response)
@@ -60,6 +64,18 @@ class TalkController extends Controller
             $voice_types = array_column($request->comments, 'voice_type');
             $avatars = array_column($request->comments, 'avatar');
             $tags = $request->tags;
+            $image = explode(';', $request->ogp_img)[1];
+            $image = explode(',', $image)[1];
+            $decodedImage = base64_decode($image);
+            $file = Str::uuid()->toString() . '.png';
+
+            $path = Storage::disk('s3')->put($file, $decodedImage);
+            if (!$path) {
+                throw new Exception('ファイルアップロード時にエラーが発生しました。');
+            }
+
+            Storage::disk('s3')->setVisibility($file, 'public');
+
 
 
             $talk = Talk::create([
@@ -67,10 +83,12 @@ class TalkController extends Controller
                 'contents' => implode(',', $contents),
                 'rates' => implode(',', $rates),
                 'voice_types' => implode(',', $voice_types),
-                'avatars' => implode(',', $avatars)
+                'avatars' => implode(',', $avatars),
+                'ogp_img' => env('APP_IMAGE_URL'). $file
             ]);
 
-            if(!empty($tags)) {
+
+            if (!empty($tags)) {
                 foreach ($tags as $tag) {
 
                     $t = Tag::where('name', $tag)->first();
@@ -87,7 +105,7 @@ class TalkController extends Controller
                 };
             }
 
-            return $talk;
+            return ['data' => $talk];
 
         });
 
@@ -98,7 +116,7 @@ class TalkController extends Controller
     {
 
         $talks = Talk::with('tags')->get();
-
+        $items = [];
 
         $talks = $talks->filter(function ($value) use ($request) {
             $tags = $value['tags']->where('tag_id', $request->id)->first();
@@ -107,7 +125,7 @@ class TalkController extends Controller
             };
         });
 
-        $items = $talks->map(function ($talk) {
+        foreach ($talks as $talk) {
             $tags = $talk->tags;
             $tags = $tags->map(function ($tag) {
                 $t = Tag::find($tag->tag_id);
@@ -118,7 +136,7 @@ class TalkController extends Controller
             });
 
             $comments = [];
-            $contents = explode(',',$talk->contents);
+            $contents = explode(',', $talk->contents);
             $voice_types = explode(',', $talk->voice_types);
             $rates = explode(',', $talk->rates);
             $avatars = explode(',', $talk->avatars);
@@ -131,18 +149,59 @@ class TalkController extends Controller
                 $comments[$index]['avatar'] = intval($avatars[$index]);
             };
 
-            return [
+            $item = [
                 'id' => $talk->id,
                 'theme' => $talk->theme,
                 'comments' => $comments,
                 'play_count' => $talk->play_count,
                 'like_count' => $talk->like_count,
                 'comment_count' => $talk->comment_count,
-                'tags' => $tags
+                'tags' => $tags,
+                'ogp_img' => $talk-> ogp_img
             ];
-        });
 
-        return ['talks' => $items];
+            array_push($items, $item);
+
+        }
+
+        return ['data' => $items];
+
+    }
+
+    public function getTalkById(Request $request)
+    {
+        $item = Talk::find($request->id);
+        $contents = explode(',', $item->contents);
+        $voice_types = explode(',', $item->voice_types);
+        $rates = explode(',', $item->rates);
+        $avatars = explode(',', $item->avatars);
+
+        $talk = [
+            'id' => $item->id,
+            'theme' => $item->theme,
+            'tags' => $item->tags->map(function ($tag) {
+                $t = Tag::find($tag->tag_id);
+                return [
+                    'id' => $t->id,
+                    'name' => $t->name
+                ];
+            }),
+            'play_count' => $item->play_count,
+            'like_count' => $item->like_count,
+            'comment_count' => $item->comment_count,
+            'ogp_img' => $item-> ogp_img
+        ];
+
+        foreach ($contents as $index => $value) {
+            $talk['comments'][$index] = [];
+            $talk['comments'][$index]['content'] = $value;
+            $talk['comments'][$index]['voice_type'] = intval($voice_types[$index]);
+            $talk['comments'][$index]['rate'] = intval($rates[$index]);
+            $talk['comments'][$index]['avatar'] = intval($avatars[$index]);
+
+        }
+
+        return ['data' => $talk];
 
     }
 
@@ -151,6 +210,16 @@ class TalkController extends Controller
 
         $talk = Talk::find($request->id);
         $talk->play_count += 1;
+        $talk->save();
+
+        return $talk;
+    }
+
+    public function like(Request $request)
+    {
+
+        $talk = Talk::find($request->id);
+        $talk->like_count += 1;
         $talk->save();
 
         return $talk;
