@@ -84,7 +84,7 @@ class TalkController extends Controller
                 'rates' => implode(',', $rates),
                 'voice_types' => implode(',', $voice_types),
                 'avatars' => implode(',', $avatars),
-                'ogp_img' => env('APP_IMAGE_URL'). $file
+                'ogp_img' => env('APP_IMAGE_URL').'/'. $file
             ]);
 
 
