@@ -115,11 +115,7 @@ class TalkController extends Controller
     public function getTalkByTag(Request $request)
     {
 
-        dd(Talk::with('tags')->get());
-
         $talks = Talk::with('tags')->get();
-
-
         $items = [];
 
         $talks = $talks->filter(function ($value) use ($request) {
