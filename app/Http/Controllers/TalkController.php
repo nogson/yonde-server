@@ -116,6 +116,7 @@ class TalkController extends Controller
     {
 
         $talks = Talk::with('tags')->get();
+        dd($talks);
         $items = [];
 
         $talks = $talks->filter(function ($value) use ($request) {
@@ -125,8 +126,7 @@ class TalkController extends Controller
             };
         });
 
-        dd($talks);
-
+ç
         foreach ($talks as $talk) {
             $tags = $talk->tags;
             $tags = $tags->map(function ($tag) {
