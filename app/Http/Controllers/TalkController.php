@@ -126,7 +126,7 @@ class TalkController extends Controller
             };
         });
 
-ç
+
         foreach ($talks as $talk) {
             $tags = $talk->tags;
             $tags = $tags->map(function ($tag) {
