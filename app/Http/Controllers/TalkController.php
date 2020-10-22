@@ -116,9 +116,8 @@ class TalkController extends Controller
     {
         $tagMap = TagMap::where('tag_id',$request->id)->get(['talk_id'])->toArray();
         $talkIds = array_column($tagMap,'talk_id');
-        dd(Talk::findMany($talkIds));
+        $talks = Talk::findMany($talkIds);
 
-        $talks = Talk::where('tags')->get();
         $items = [];
 
         $talks = $talks->filter(function ($value) use ($request) {
