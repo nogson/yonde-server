@@ -18,13 +18,15 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/talk/{id}', 'TalkController@getTalkById');
-Route::get('/talks', 'TalkController@index');
-Route::get('/talks/{id}', 'TalkController@getTalkByTag');
-Route::post('/talk', 'TalkController@store');
-Route::post('/add_play_count', 'TalkController@addPlayCount');
-Route::post('/like', 'TalkController@like');
+Route::middleware(['cors'])->group(function () {
 
+    Route::get('/talk/{id}', 'TalkController@getTalkById');
+    Route::get('/talks', 'TalkController@index');
+    Route::get('/talks/{id}', 'TalkController@getTalkByTag');
+    Route::post('/talk', 'TalkController@store');
+    Route::post('/add_play_count', 'TalkController@addPlayCount');
+    Route::post('/like', 'TalkController@like');
+    Route::get('/tags', 'TagController@index');
+});
 
-Route::get('/tags', 'TagController@index');
 

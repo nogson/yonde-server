@@ -43,6 +43,18 @@ services:
      # - ./docker/mysql/logs:/var/log/mysql
     networks:
      - vessel
+#  pgsql:
+#    image: postgres:10.0
+#    ports:
+#      - "${MYSQL_PORT}:5432"
+#    environment:
+#      POSTGRES_USER: "${DB_USERNAME}"
+#      POSTGRES_PASSWORD: "${DB_PASSWORD}"
+#      POSTGRES_DB: "${DB_DATABASE}"
+#    volumes:
+#      - vesseldocpgsql:/var/lib/postgresql/data
+#    networks:
+#      - vessel
   redis:
     image: redis:alpine
     volumes:
@@ -56,4 +68,6 @@ volumes:
   vesselmysql:
     driver: "local"
   vesselredis:
+    driver: "local"
+  vesselpgsql:
     driver: "local"
