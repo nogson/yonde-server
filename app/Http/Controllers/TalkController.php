@@ -114,58 +114,10 @@ class TalkController extends Controller
 
     public function getTalkByTag(Request $request)
     {
-
-        $talks = Talk::with('tags')->get();
-        $items = [];
-
-        $talks = $talks->filter(function ($value) use ($request) {
-            $tags = $value['tags']->where('tag_id', $request->id)->first();
-            if (isset($tags)) {
-                return $value;
-            };
-        });
+        dd( Talk::with('tags')->get());
 
 
-        foreach ($talks as $talk) {
-            $tags = $talk->tags;
-            $tags = $tags->map(function ($tag) {
-                $t = Tag::find($tag->tag_id);
-                return [
-                    'id' => $t->id,
-                    'name' => $t->name
-                ];
-            });
-
-            $comments = [];
-            $contents = explode(',', $talk->contents);
-            $voice_types = explode(',', $talk->voice_types);
-            $rates = explode(',', $talk->rates);
-            $avatars = explode(',', $talk->avatars);
-
-            foreach ($contents as $index => $value) {
-                $comments[$index] = [];
-                $comments[$index]['content'] = $value;
-                $comments[$index]['voice_type'] = intval($voice_types[$index]);
-                $comments[$index]['rate'] = intval($rates[$index]);
-                $comments[$index]['avatar'] = intval($avatars[$index]);
-            };
-
-            $item = [
-                'id' => $talk->id,
-                'theme' => $talk->theme,
-                'comments' => $comments,
-                'play_count' => $talk->play_count,
-                'like_count' => $talk->like_count,
-                'comment_count' => $talk->comment_count,
-                'tags' => $tags,
-                'ogp_img' => $talk-> ogp_img
-            ];
-
-            array_push($items, $item);
-
-        }
-
-        return ['data' => $items];
+        //return ['data' => $items];
 
     }
 
