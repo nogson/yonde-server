@@ -114,9 +114,9 @@ class TalkController extends Controller
 
     public function getTalkByTag(Request $request)
     {
-        $tagMap = TagMap::where('tag_id',$request->id)->orderBy('created_at', 'desc')->get(['talk_id'])->toArray();
+        $tagMap = TagMap::where('tag_id',$request->id)->get(['talk_id'])->toArray();
         $talkIds = array_column($tagMap,'talk_id');
-        $talks = Talk::findMany($talkIds);
+        $talks = Talk::orderBy('created_at', 'desc')->findMany($talkIds);
 
         $items = [];
 
