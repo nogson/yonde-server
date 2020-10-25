@@ -27,6 +27,9 @@ Route::middleware(['cors'])->group(function () {
     Route::post('/add_play_count', 'TalkController@addPlayCount');
     Route::post('/like', 'TalkController@like');
     Route::get('/tags', 'TagController@index');
+    Route::get('/messages/{id}', 'MessageController@index');
+    Route::post('/message', 'MessageController@store');
+
 });
 
 
